@@ -41,8 +41,7 @@ A cross-platform social media app specifically for coders and programmers, inspi
 ## Tech Stack
 
 ### Frontend
-- Ionic (for cross-platform mobile/web)
-- Angular (integrated with Ionic)
+- Expo with reat native (for cross-platform mobile/web)
 
 ### Backend
 - Node.js with Express
@@ -54,7 +53,7 @@ A cross-platform social media app specifically for coders and programmers, inspi
 - AWS S3 for media storage
 - Firebase Cloud Messaging for notifications
 
-### Optional AI Enhancements
+### Optional AI Enhancements(do this at the last when every thing is ready and working fine)
 - AI-powered code suggestions
 - AI moderation
 - Personalized content recommendations
@@ -63,7 +62,7 @@ A cross-platform social media app specifically for coders and programmers, inspi
 
 ```
 joy-hacks/
-├── client/                 # Ionic frontend application
+├── client/                 # expo frontend application
 ├── server/                 # Node.js backend application
 ├── docker/                 # Docker configuration for code execution
 └── docs/                   # Documentation
