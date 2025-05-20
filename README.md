@@ -2,6 +2,25 @@
 
 A cross-platform social media app specifically for coders and programmers, inspired by the reels/shorts format. The app allows users to create, view, and interact with short-form videos where each video displays code on one side and its execution result/output on the other.
 
+## Project Structure
+
+```
+joy-hacks/
+├── client/                 # React Native frontend
+├── server/                 # Node.js backend API
+├── docker/                 # Container configurations
+└── docs/                   # Architecture diagrams
+
+## Environment Setup
+
+```bash
+git clone https://github.com/yourusername/joy-hacks.git
+cd joy-hacks
+cp client/.env.example client/.env
+cp server/.env.example server/.env
+docker-compose up --build
+```
+
 ## Core Features
 
 ### User Authentication

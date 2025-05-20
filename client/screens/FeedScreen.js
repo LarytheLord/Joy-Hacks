@@ -1,55 +1,73 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, FlatList, StyleSheet } from 'react-native';
+import { Card, Title, Button, ActivityIndicator, useTheme } from 'react-native-paper';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { fetchVideos } from '../src/api/apiService';
 
 const FeedScreen = () => {
- const [videos, setVideos] = useState([]);
- const [loading, setLoading] = useState(true);
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const theme = useTheme();
 
- useEffect(() => {
- fetchVideos();
- }, []);
+  useEffect(() => {
+    fetchVideos();
+  }, []);
 
- const fetchVideos = async () => {
- try {
- const response = await fetch('http://localhost:5000/api/videos/feed');
- const data = await response.json();
- setVideos(data);
- } catch (error) {
- console.error('Error fetching videos:', error);
- } finally {
- setLoading(false);
- }
- };
+  const fetchVideos = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchVideos();
+      setVideos(data);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
  const renderVideoItem = ({ item }) => (
- <View style={styles.videoContainer}>
- <Text style={styles.videoTitle}>{item.title}</Text>
+ <Card style={styles.card}>
+ <Card.Content>
+ <Title style={styles.title}>{item.title}</Title>
  
- <View style={styles.codeContainer}>
- <Text style={styles.codeContent}>{item.codeContent}</Text>
+ <View style={styles.codeBlock}>
+ <Text selectable style={styles.codeText}>{item.codeContent}</Text>
  </View>
 
  <View style={styles.interactionBar}>
- <TouchableOpacity style={styles.interactionButton}>
- <Text>❤️ {item.likes?.length || 0}</Text>
- </TouchableOpacity>
-
- <TouchableOpacity style={styles.interactionButton}>
- <Text>💬 {item.comments?.length || 0}</Text>
- </TouchableOpacity>
+ <Button mode="text" icon="heart-outline" style={styles.interactionButton}>
+ {item.likes?.length || 0}
+ </Button>
+ <Button mode="text" icon="comment-outline" style={styles.interactionButton}>
+ {item.comments?.length || 0}
+ </Button>
  </View>
+ </Card.Content>
+ </Card>
+ );
+
+ if (error) {
+ return (
+ <View style={styles.centered}>
+ <Icon name="alert-circle" size={24} color={theme.colors.error} />
+ <Text style={styles.errorText}>{error}</Text>
+ <Button mode="contained" onPress={fetchVideos}>Retry</Button>
  </View>
  );
+ }
 
  return (
  <View style={styles.container}>
  {loading ? (
- <Text>Loading videos...</Text>
+ <ActivityIndicator animating={true} size="large" style={styles.loader} />
  ) : (
  <FlatList
  data={videos}
  renderItem={renderVideoItem}
  keyExtractor={item => item._id}
+ contentContainerStyle={styles.listContent}
  />
  )}
  </View>
@@ -59,41 +77,49 @@ const FeedScreen = () => {
 const styles = StyleSheet.create({
  container: {
  flex: 1,
- padding: 10
+ backgroundColor: '#f8fafc'
  },
- videoContainer: {
- backgroundColor: '#fff',
- borderRadius: 8,
- padding: 15,
- marginBottom: 15,
+ card: {
+ margin: 12,
+ borderRadius: 12,
  elevation: 2
  },
- videoTitle: {
- fontSize: 18,
- fontWeight: '600',
- marginBottom: 10
+ title: {
+ marginBottom: 12
  },
- codeContainer: {
- backgroundColor: '#f8f9fa',
- borderRadius: 6,
- padding: 10,
- marginBottom: 10
+ codeBlock: {
+ backgroundColor: '#ffffff',
+ borderRadius: 8,
+ padding: 16,
+ marginBottom: 16
  },
- codeContent: {
+ codeText: {
  fontFamily: 'monospace',
- fontSize: 14
+ fontSize: 14,
+ color: '#334155'
  },
  interactionBar: {
  flexDirection: 'row',
- gap: 15
+ justifyContent: 'flex-start',
+ marginTop: 8
  },
  interactionButton: {
- flexDirection: 'row',
+ marginRight: 16
+ },
+ loader: {
+ flex: 1,
+ justifyContent: 'center'
+ },
+ centered: {
+ flex: 1,
+ justifyContent: 'center',
  alignItems: 'center',
- paddingVertical: 6,
- paddingHorizontal: 12,
- backgroundColor: '#e9ecef',
- borderRadius: 20
+ padding: 20
+ },
+ errorText: {
+ marginVertical: 16,
+ color: '#dc2626',
+ fontSize: 16
  }
 });
 

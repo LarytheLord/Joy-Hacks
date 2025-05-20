@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: joy-hacks-db
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - joy-hacks-network
+
+  server:
+    build: ../server
+    container_name: joy-hacks-server
+    ports:
+      - '3001:3001'
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://root:example@mongodb:27017/joyhacks?authSource=admin
+      JWT_SECRET: ${JWT_SECRET}
+      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
+      AWS_SECRET_KEY: ${AWS_SECRET_KEY}
+    depends_on:
+      - mongodb
+    networks:
+      - joy-hacks-network
+
+  client:
+    build: ../client
+    container_name: joy-hacks-client
+    ports:
+      - '19000:19000'
+      - '19001:19001'
+      - '19002:19002'
+    environment:
+      EXPO_PUBLIC_API_URL: http://server:3001
+    networks:
+      - joy-hacks-network
+
+  code-executor:
+    build: .
+    container_name: joy-hacks-code-executor
+    volumes:
+      - ../server/code-execution:/app/code
+    restart: unless-stopped
+    networks:
+      - joy-hacks-network
+    security_opt:
+      - no-new-privileges=true
+    mem_limit: 512m
+    cpus: 0.5
+
+networks:
+  joy-hacks-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
