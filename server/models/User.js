@@ -1,58 +1,80 @@
-import { db } from '../firebase.js';
+import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
 
-const usersCollection = db.collection('users');
-
-const User = {
-  /**
-   * Create a new user in Firestore
-   * @param {Object} userData - User data including email, username, etc.
-   * @returns {Object} Created user with ID
-   */
-  async create(userData) {
-    const docRef = await usersCollection.add({
-      ...userData,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
-    return { id: docRef.id, ...userData };
+const userSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true
   },
-
-  /**
-   * Find a user by email
-   * @param {string} email - User's email
-   * @returns {Object|null} User object or null if not found
-   */
-  async findByEmail(email) {
-    const snapshot = await usersCollection.where('email', '==', email).get();
-    if (snapshot.empty) return null;
-    return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
   },
-  
-  /**
-   * Find a user by ID
-   * @param {string} id - User ID
-   * @returns {Object|null} User object or null if not found
-   */
-  async findById(id) {
-    const doc = await usersCollection.doc(id).get();
-    if (!doc.exists) return null;
-    return { id: doc.id, ...doc.data() };
+  password: {
+    type: String,
+    required: true
   },
-  
-  /**
-   * Update a user
-   * @param {string} id - User ID
-   * @param {Object} updateData - Data to update
-   * @returns {Object} Updated user
-   */
-  async update(id, updateData) {
-    await usersCollection.doc(id).update({
-      ...updateData,
-      updatedAt: new Date()
-    });
-    const doc = await usersCollection.doc(id).get();
-    return { id: doc.id, ...doc.data() };
+  fullName: {
+    type: String,
+    required: true
+  },
+  avatar: {
+    type: String,
+    default: ''
+  },
+  bio: {
+    type: String,
+    default: ''
+  },
+  programmingLanguages: [{
+    type: String
+  }],
+  followers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  following: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  savedVideos: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Video'
+  }],
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
   }
+}, {
+  timestamps: true
+});
+
+// Hash password before saving
+userSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Method to compare password
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
 };
 
-export default User;
+export default mongoose.model('User', userSchema);

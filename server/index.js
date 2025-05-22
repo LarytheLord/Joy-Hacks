@@ -1,9 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { db } from './firebase.js';
-import authRoutes from './routes/authRoutes.js';
-import videoRoutes from './routes/videoRoutes.js';
+import { connectDB } from './config/database.js';
+import authRoutes from './routes/auth.js';
+import videoRoutes from './routes/videos.js';
 import codeExecutionRoutes from './routes/codeExecutionRoutes.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -13,6 +13,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 dotenv.config();
+
+// Connect to MongoDB
+connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -36,7 +39,7 @@ if (!fs.existsSync(uploadsDir)) {
 
 // Basic Routes
 app.get('/', (req, res) => {
-  res.send('JoyHacks API Server');
+  res.json({ message: 'API is running...' });
 });
 
 // API Routes
@@ -47,11 +50,14 @@ app.use('/api/code', codeExecutionRoutes);
 // Error Handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ error: err.message || 'Something went wrong!' });
+  res.status(500).json({
+    message: err.message || 'Something went wrong!',
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
 
 process.on('SIGINT', () => {
@@ -59,5 +65,4 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
-// Export db for use in models
-export { db };
+module.exports = app;
