@@ -3,10 +3,10 @@ import React from 'react';
 import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import TabBarIcon from '../../components/navigation/TabBarIcon';
+import { Colors } from '../../constants/Colors';
+import { useColorScheme } from '../../hooks/useColorScheme';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -30,14 +30,27 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+           tabBarIcon: ({ color, focused }) => (
+             <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
+           ),
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
           title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+           tabBarIcon: ({ color, focused }) => (
+             <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
+           ),
+        }}
+      />
+      <Tabs.Screen
+        name="VideoCodeScreen"
+        options={{
+          title: 'Video & Code',
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? 'play-circle' : 'play-circle-outline'} color={color} />
+          ),
         }}
       />
     </Tabs>
